@@ -9,8 +9,6 @@ jobs:
     runs-on: ubuntu-latest
     env:
       ACCESS_TOKEN: ${{ secrets.ACCESS_TOKEN }}
-      TELEGRAM_TO: "${{ secrets.TELEGRAM_TO }}"
-      TELEGRAM_TOKEN: "${{ secrets.TELEGRAM_TOKEN }}"
       CCACHE_COMPILERCHECK: "%compiler% -dumpmachine; %compiler% -dumpversion"
       CCACHE_NOHASHDIR: "true"
       CCACHE_MAXSIZE: "2G"
@@ -31,8 +29,8 @@ jobs:
     - name: Update Repo
       id: sha
       run: |
-        git config --global user.name "H1mJT"
-        git config --global user.email "himjyoti22@gmail.com"
+        git config --global user.name "ij_israfil"
+        git config --global user.email "israfilkhan494@gmail.com"
         git submodule sync
         git submodule update --init --recursive
         cd $GITHUB_WORKSPACE/KernelSU
@@ -48,14 +46,6 @@ jobs:
       with:
         github_token: ${{ secrets.ACCESS_TOKEN }}
         
-    - name: Send build message to Telegram
-      if: "${{ env.TELEGRAM_TO != '' && env.TELEGRAM_TOKEN != '' && github.sha != steps.sha.outputs.NEW_SHA }}"
-      uses: appleboy/telegram-action@master
-      with:
-        to: ${{ secrets.TELEGRAM_TO }}
-        token: ${{ secrets.TELEGRAM_TOKEN }}
-        message: Build Started
-        
     - name: Install dependencies
       if: "${{ github.sha != steps.sha.outputs.NEW_SHA }}"
       id: version
@@ -65,7 +55,7 @@ jobs:
         sudo apt install gcc-arm-linux-gnueabi -y
         sudo apt install binutils make python3 libssl-dev build-essential bc  bison flex zip unzip libssl-dev ca-certificates xz-utils mkbootimg cpio device-tree-compiler git git-lfs -y
         git clone --depth=1 https://github.com/kdrag0n/proton-clang.git clang
-        git clone https://github.com/H1mJT/AnyKernel3 -b master --depth=1
+        git clone https://github.com/ij-israfil/AnyKernel3 -b master --depth=1
         rm -rf AnyKernel3/.git
         rm -rf AnyKernel3/.github
         cd $GITHUB_WORKSPACE/KernelSU
@@ -87,22 +77,3 @@ jobs:
        make $KERNEL_CMDLINE CC="ccache clang" -j$(nproc --all)
        cp out/arch/arm64/boot/Image.gz-dtb AnyKernel3
        cd AnyKernel3 && zip -r ../RMX1901-KernelSU-${{ steps.version.outputs.VER }}-${{ steps.get_time.outputs.TIME }}.zip *
-
-    - name: Upload build to Telegram
-      if: "${{ env.TELEGRAM_TO != '' && env.TELEGRAM_TOKEN != '' && github.sha != steps.sha.outputs.NEW_SHA}}"
-      uses: appleboy/telegram-action@master
-      with:
-        to: ${{ secrets.TELEGRAM_TO }}
-        token: ${{ secrets.TELEGRAM_TOKEN }}
-        message: |
-          Updated KernelSU to ${{ steps.version.outputs.VER }}
-          Get latest manager app at https://t.me/KernelSU_group/3234
-        document: RMX1901-KernelSU-${{ steps.version.outputs.VER }}-${{ steps.get_time.outputs.TIME }}.zip
-    - name: Upload Kernel
-      if: "${{ github.sha != steps.sha.outputs.NEW_SHA }}"
-      uses: actions/upload-artifact@v3
-      with:
-        name: RMX1901-KernelSU-${{ steps.version.outputs.VER }}-${{ steps.get_time.outputs.TIME }}
-        path: "AnyKernel3/*"
-        
-        
