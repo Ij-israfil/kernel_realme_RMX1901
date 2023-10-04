@@ -45,7 +45,6 @@ CPPFLAGS_vdso.lds += -P -C -U$(ARCH)
 $(obj)/vdso.o : $(obj)/vdso.so
 
 # Link rule for the .so file, .lds has to be first
-SYSCFLAGS_vdso.so.dbg = $(c_flags)
 $(obj)/vdso.so.dbg: $(src)/vdso.lds $(obj-vdso)
 	$(call if_changed,vdsold)
 
